@@ -1,0 +1,12 @@
+ament_copyright==0.17.4
+ament_flake8==0.17.4
+ament_pep257==0.17.4
+numpy==2.4.2
+PyAudio==0.2.13
+pydantic_ai==1.63.0
+pytest==7.4.4
+pywhispercpp==1.4.2.dev2+gaaf756bd3
+rclpy==7.1.9
+rosidl_parser==4.6.7
+setuptools==68.1.2
+std_msgs==5.3.6
