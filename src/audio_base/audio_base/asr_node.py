@@ -8,9 +8,9 @@ import time
 from rclpy.node import Node
 
 import numpy as np
-from queue import Queue, Empty
 
-from audio_msg.msg import AudioStamped, Audio, AudioInfo, AudioData
+from audio_msg.msg import Audio
+from std_msgs.msg import String
 
 from pywhispercpp.model import Model
 
@@ -30,12 +30,14 @@ class ASRNode(Node):
         # Declare parameters
         self.declare_parameter('device_index', -1)  # -1 for default device
         self.declare_parameter('topic', 'audio_stream')
+        self.declare_parameter('output_topic', 'text_stream')
         self.declare_parameter('model_name', 'large-v3-turbo-q5_0')
 #        self.declare_parameter('model_name', 'small.en')
         
         # Get parameters
         self.device_index = self.get_parameter('device_index').value
         self.topic = self.get_parameter('topic').value
+        self.output_topic = self.get_parameter('output_topic').value
         self.model_name = self.get_parameter('model_name').value
         self.config_received = False
         
@@ -48,6 +50,13 @@ class ASRNode(Node):
             Audio,
             self.topic,
             self.audio_chunk_callback,
+            10
+        )
+        
+        # Publishers
+        self.text_publisher = self.create_publisher(
+            String, 
+            self.output_topic, 
             10
         )
         
@@ -87,7 +96,7 @@ class ASRNode(Node):
         else:
             if not self.append_to_buffer(audio_data):
                 self.get_logger().warning('Audio buffer overflow, processing current buffer')
-                # Buffer overflow, should arrange an overlap window but not expecting this trigger
+                # Buffer overflow, should arrange an overlap window but not expecting this to trigger
                 self.transcribe()
 
     def reset_buffer(self):
@@ -111,6 +120,7 @@ class ASRNode(Node):
     def new_segment_callback(self, segment):
         """Callback for new transcription segments."""
         self.get_logger().info(f'Transcribed segment: {segment.text}')
+        self.text_publisher.publish(String(data=segment.text))
 
     def cleanup(self):
         pass

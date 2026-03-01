@@ -17,26 +17,19 @@ colcon build --symlink-install
 sudo apt install ros-jazzy-rosbridge-server
 ```
 
-For asr_node also install pyfasterwhisper with appropriate GPU support. E.g. 
+For asr_node also install `pywhispercpp` with appropriate GPU support. E.g. 
 
 ```
 GGML_CUDA=1 pip install git+https://github.com/absadiki/pywhispercpp
 ```
 
+But for some reason this isn't actually about to use CUDA.
+
 ## Running
 
-```
-. setup.sh
-ros2 run {package} {node}
-```
-
-For Marvin access:
-
-```
-. setup.sh
-ros2 launch rosbridge_server rosbridge_websocket_launch.xml
-```
-
+- `start_bridge.sh`
+- `start_asr.sh`
+- `start_llm.sh`
 
 ## Packages
 
@@ -57,5 +50,8 @@ Provides the following nodes:
 
 `player_node` - consumes messages from topic (default `audio_stream` as above) to play through default speaker, takes audio settings from info header in the stream messages
 
-`asr_node` - consumes messages from topic (default `audio_stream` as above) and at start of utterance event captures data to submit to ASR, at end of utterance event runs fasterwhisper ASR and sends the result to ...
+`asr_node` - consumes messages from topic (default `audio_stream` as above) and at start of utterance event captures data to submit to ASR, at end of utterance event runs fasterwhisper ASR and sends the result to `text_stream`
 
+### llm_support
+
+`llm_node` subscribes to `text_stream` and @@
