@@ -39,6 +39,9 @@ class LLMNode(Node):
             ),
         )
 
+        self.is_running = False
+        self.stop = False
+
         self.subscription = self.create_subscription(
             String,
             self.topic_name,
@@ -53,11 +56,27 @@ class LLMNode(Node):
 
     def message_callback(self, message: String):
         self.get_logger().info(f'Processing message: {message.data}')
-        thread = threading.Thread(target=self._run_agent, args=(message.data,), daemon=True)
-        thread.start()
+        text = message.data.strip()
+        if text == '<start>':
+            if self.is_running:
+                self.get_logger().info('Stop command received, stopping current LLM response')
+                self.stop = True
+            self._publish('<start>')
+            return
+        if re.match(r'^stop[.!?]*$', text, re.IGNORECASE):
+            if self.is_running:
+                self.get_logger().info('Stop command received, stopping current LLM response')
+                self.stop = True
+            self._publish('stopping')
+            return
+        else:
+            thread = threading.Thread(target=self._run_agent, args=(text,), daemon=True)
+            thread.start()
 
     def _run_agent(self, text: str):
+        self.is_running = True
         asyncio.run(self._stream_agent(text))
+        self.is_running = False
 
     def _publish(self, text: str):
         text = text.strip()
@@ -71,6 +90,10 @@ class LLMNode(Node):
         buffer = ''
         async with self.agent.run_stream(text) as response:
             async for chunk in response.stream_text(delta=True):
+                if self.stop:
+                    self.get_logger().info('LLM response streaming stopped')
+                    self.stop = False
+                    return
                 buffer += chunk
                 # Publish any complete sentences found in the buffer
                 parts = _SENTENCE_SPLIT_RE.split(buffer)

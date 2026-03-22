@@ -65,6 +65,8 @@ class TTSNode(Node):
 
         # Worker thread to keep synthesis off the subscriber callback thread
         self._queue: Queue = Queue()
+        self.stop = False
+        self.is_running = False
         self._worker = Thread(target=self._synthesis_worker, daemon=True)
         self._worker.start()
 
@@ -75,7 +77,15 @@ class TTSNode(Node):
     def text_callback(self, msg: String):
         """Queue incoming text for synthesis."""
         text = msg.data.strip()
+        if text == '<start>':
+            self.get_logger().info('Start command received, stopping current synthesis if running')
+            if self.is_running:
+                self.get_logger().info('Stopping current TTS synthesis')
+                self.stop = True
+            self._queue.empty()  # Clear any pending text
+            return
         if text:
+            self.stop = False
             self._queue.put(text)
 
     def _synthesis_worker(self):
@@ -87,11 +97,16 @@ class TTSNode(Node):
                 continue
 
             self.get_logger().info(f'Synthesising: {text!r}')
+            self.is_running = True
 
             chunk_index = 0
             for audio_tensor in self.tts_model.generate_audio_stream(
                 self.voice_state, text
             ):
+                if self.stop:
+                    self.get_logger().info('TTS synthesis stopped')
+                    break
+
                 # Resample 24kHz -> 16kHz (ratio 2/3)
                 audio_f32 = audio_tensor.numpy().astype(np.float32)
                 audio_16k = resample_poly(audio_f32, 2, 3).astype(np.float32)
@@ -114,6 +129,7 @@ class TTSNode(Node):
                 self.audio_publisher.publish(msg)
                 chunk_index += 1
 
+            self.is_running = False
             self.get_logger().info(
                 f'Synthesis complete: {chunk_index} chunks published'
             )

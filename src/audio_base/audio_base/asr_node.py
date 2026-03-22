@@ -88,6 +88,7 @@ class ASRNode(Node):
         if msg.event == 'start_utterance':
             self.get_logger().info('Start of utterance detected')
             self.reset_buffer()
+            self.text_publisher.publish(String(data='<start>'))
             self.append_to_buffer(audio_data)
         elif msg.event == 'end_utterance':
             self.get_logger().info('End of utterance detected')
