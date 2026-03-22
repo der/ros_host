@@ -14,3 +14,4 @@ tornado
 pymongo
 pillow
 cbor2
+pocket-tts

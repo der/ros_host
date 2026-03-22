@@ -29,7 +29,7 @@ class AudioPlayerNode(Node):
         
         # Declare parameters
         self.declare_parameter('device_index', -1)  # -1 for default device
-        self.declare_parameter('buffer_size', 10)   # Number of chunks to buffer
+        self.declare_parameter('buffer_size', 64)   # Number of chunks to buffer
         self.declare_parameter('topic', 'audio_stream')
         
         # Get parameters

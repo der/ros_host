@@ -27,6 +27,7 @@ setup(
             'capture_node = audio_base.capture_node:main',
             'player_node = audio_base.player_node:main',
             'asr_node = audio_base.asr_node:main',
+            'tts_node = audio_base.tts_node:main',
         ],
     },
 )
