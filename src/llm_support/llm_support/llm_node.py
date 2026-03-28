@@ -57,11 +57,11 @@ class LLMNode(Node):
     def message_callback(self, message: String):
         self.get_logger().info(f'Processing message: {message.data}')
         text = message.data.strip()
-        if text == '<start>':
+        if text == '<break>':
             if self.is_running:
                 self.get_logger().info('Stop command received, stopping current LLM response')
                 self.stop = True
-            self._publish('<start>')
+            self._publish('<break>')
             return
         if re.match(r'^stop[.!?]*$', text, re.IGNORECASE):
             if self.is_running:

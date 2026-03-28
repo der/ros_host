@@ -43,6 +43,7 @@ class TTSNode(Node):
         self.tts_model = TTSModel.load_model()
         self.tts_sample_rate = self.tts_model.sample_rate  # 24000 Hz
         self.output_sample_rate = 16000
+        self.chunk_size = 1280  # 80ms at 16kHz
         self.get_logger().info(
             f'pocket_tts model loaded (sample_rate={self.tts_sample_rate})'
         )
@@ -104,17 +105,17 @@ class TTSNode(Node):
                 self.voice_state, text
             ):
                 if self.stop:
-                    self.get_logger().info('TTS synthesis stopped')
-                    break
+                    chunk_samples = self.chunk_size
+                    audio_buffer = np.zeros(chunk_samples, dtype=np.int16)
+                else:
+                    # Resample 24kHz -> 16kHz (ratio 2/3)
+                    audio_f32 = audio_tensor.numpy().astype(np.float32)
+                    audio_16k = resample_poly(audio_f32, 2, 3).astype(np.float32)
 
-                # Resample 24kHz -> 16kHz (ratio 2/3)
-                audio_f32 = audio_tensor.numpy().astype(np.float32)
-                audio_16k = resample_poly(audio_f32, 2, 3).astype(np.float32)
-
-                # Convert float32 [-1, 1] to int16
-                audio_i16 = np.clip(audio_16k, -1.0, 1.0)
-                audio_i16 = (audio_i16 * 32767).astype(np.int16)
-                chunk_samples = len(audio_i16)  # 1280
+                    # Convert float32 [-1, 1] to int16
+                    audio_buffer = np.clip(audio_16k, -1.0, 1.0)
+                    audio_buffer = (audio_buffer * 32767).astype(np.int16)
+                    chunk_samples = len(audio_buffer)  # 1280
 
                 msg = Audio()
                 msg.info = AudioInfo(
@@ -123,11 +124,15 @@ class TTSNode(Node):
                     chunk_size=chunk_samples,
                     format=f'16kmono-{chunk_samples}',
                 )
-                msg.data = AudioData(int16_data=audio_i16.tolist())
-                msg.event = ''
+                msg.data = AudioData(int16_data=audio_buffer.tolist())
+                msg.event = 'break' if self.stop else ''
 
                 self.audio_publisher.publish(msg)
                 chunk_index += 1
+
+                if self.stop:
+                    self.get_logger().info('TTS synthesis stopped')
+                    break
 
             self.is_running = False
             self.get_logger().info(
