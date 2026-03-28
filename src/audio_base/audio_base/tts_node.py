@@ -83,7 +83,8 @@ class TTSNode(Node):
             if self.is_running:
                 self.get_logger().info('Stopping current TTS synthesis')
                 self.stop = True
-            self._queue.empty()  # Clear any pending text
+            with self._queue.mutex:
+                self._queue.queue.clear()  # Clear any pending text
             return
         if text:
             self.stop = False
