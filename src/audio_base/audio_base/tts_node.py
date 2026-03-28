@@ -78,7 +78,7 @@ class TTSNode(Node):
     def text_callback(self, msg: String):
         """Queue incoming text for synthesis."""
         text = msg.data.strip()
-        if text == '<start>':
+        if text == '<break>':
             self.get_logger().info('Start command received, stopping current synthesis if running')
             if self.is_running:
                 self.get_logger().info('Stopping current TTS synthesis')
