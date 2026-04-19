@@ -59,6 +59,12 @@ class ASRNode(Node):
             self.output_topic, 
             10
         )
+
+        self.event_publisher = self.create_publisher(
+            String,
+            'events',
+            10
+        )
         
         # Statistics
         self.chunks_received = 0
@@ -88,7 +94,6 @@ class ASRNode(Node):
         if msg.event == 'start_utterance':
             self.get_logger().info('Start of utterance detected')
             self.reset_buffer()
-            self.text_publisher.publish(String(data='<break>'))
             self.append_to_buffer(audio_data)
         elif msg.event == 'end_utterance':
             self.get_logger().info('End of utterance detected')
@@ -122,6 +127,9 @@ class ASRNode(Node):
         """Callback for new transcription segments."""
         self.get_logger().info(f'Transcribed segment: {segment.text}')
         self.text_publisher.publish(String(data=segment.text))
+        self.event_publisher.publish(String(data=f"asr/{segment.text.strip()}"))
+        if segment.text.strip() == 'stop':
+            self.event_publisher.publish(String(data='stop'))
 
     def cleanup(self):
         pass

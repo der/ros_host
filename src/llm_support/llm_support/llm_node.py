@@ -55,26 +55,41 @@ class LLMNode(Node):
             self.message_callback,
             10,
         )
+
+        self.event_subscription = self.create_subscription(
+            String,
+            'events',
+            self.event_callback,
+            10,
+        )
+
         self.publisher = self.create_publisher(String, self.response_topic, 10)
         self.get_logger().info(
             f'LLM Node started, listening on topic: {self.topic_name}, '
             f'publishing to: {self.response_topic}, using model: {self.model_name}'
         )
+        
+        self.event_publisher = self.create_publisher(
+            String,
+            'events',
+            10
+        )
+
+    def event_callback(self, message: String):
+        msg = message.data.strip()
+        if msg == 'interrupt' or msg == 'stop':
+             if self.is_running:
+                self.get_logger().info('Interrupt event received, stopping current LLM response')
+                self.stop = True
 
     def message_callback(self, message: String):
         self.get_logger().info(f'Processing message: {message.data}')
         text = message.data.strip()
-        if text == '<break>':
-            if self.is_running:
-                self.get_logger().info('Stop command received, stopping current LLM response')
-                self.stop = True
-            self._publish('<break>')
-            return
         if re.match(r'^stop[.!?]*$', text, re.IGNORECASE):
             if self.is_running:
                 self.get_logger().info('Stop command received, stopping current LLM response')
                 self.stop = True
-            self._publish('stopping')
+            self.event_publisher.publish(String(data='stop'))
             return
         else:
             thread = threading.Thread(target=self._run_agent, args=(text,), daemon=True)
@@ -92,6 +107,7 @@ class LLMNode(Node):
             msg = String()
             msg.data = text
             self.publisher.publish(msg)
+            self.event_publisher.publish(String(data=f'llm/{text}'))
 
     async def _stream_agent(self, text: str):
         buffer = ''

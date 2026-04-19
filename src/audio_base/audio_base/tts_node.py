@@ -64,6 +64,13 @@ class TTSNode(Node):
             10
         )
 
+        self.event_subscription = self.create_subscription(
+            String,
+            'events',
+            self.event_callback,
+            10,
+        )
+
         # Worker thread to keep synthesis off the subscriber callback thread
         self._queue: Queue = Queue()
         self.stop = False
@@ -75,17 +82,19 @@ class TTSNode(Node):
             f'TTS node ready: {self.input_topic} -> {self.output_topic}'
         )
 
-    def text_callback(self, msg: String):
-        """Queue incoming text for synthesis."""
-        text = msg.data.strip()
-        if text == '<break>':
-            self.get_logger().info('Start command received, stopping current synthesis if running')
+    def event_callback(self, msg: String):
+        event = msg.data.strip()
+        if event == 'stop':
+            self.get_logger().info('Stop event received')
             if self.is_running:
                 self.get_logger().info('Stopping current TTS synthesis')
                 self.stop = True
             with self._queue.mutex:
                 self._queue.queue.clear()  # Clear any pending text
-            return
+
+    def text_callback(self, msg: String):
+        """Queue incoming text for synthesis."""
+        text = msg.data.strip()
         if text:
             self.stop = False
             self._queue.put(text)
