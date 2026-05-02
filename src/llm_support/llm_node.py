@@ -13,10 +13,8 @@ import sys
 
 from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIChatModel
-from pydantic_ai.providers.ollama import OllamaProvider
 from pydantic_ai.profiles import ModelProfile
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from pydantic_ai.providers.ollama import OllamaProvider
 
 from messages.base import BaseNode
 

@@ -8,16 +8,12 @@ import argparse
 import asyncio
 import logging
 import os
-import sys
-from queue import Queue, Empty
+from queue import Empty, Queue
 
 import numpy as np
 import pyaudio
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
 from messages.base import BaseNode
-from messages.audio import AudioInfo, AudioData, AudioMessage
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
 logger = logging.getLogger("player_node")

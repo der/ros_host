@@ -8,14 +8,11 @@ import argparse
 import asyncio
 import logging
 import os
-import sys
 import threading
-from queue import Queue, Empty
+from queue import Empty, Queue
 
 import numpy as np
-from transformers import AutoProcessor, AutoModelForMultimodalLM
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from transformers import AutoModelForMultimodalLM, AutoProcessor
 
 from messages.base import BaseNode
 

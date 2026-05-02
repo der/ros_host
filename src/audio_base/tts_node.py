@@ -6,20 +6,18 @@ synthesised audio chunks to speech_stream using pocket-tts in streaming mode.
 
 import argparse
 import asyncio
+import contextlib
 import logging
 import os
-import sys
 import threading
-from queue import Queue, Empty
+from queue import Empty, Queue
 
 import numpy as np
-from scipy.signal import resample_poly
 from pocket_tts import TTSModel
+from scipy.signal import resample_poly
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
+from messages.audio import AudioData, AudioInfo, AudioMessage
 from messages.base import BaseNode
-from messages.audio import AudioInfo, AudioData, AudioMessage
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
 logger = logging.getLogger("tts_node")
@@ -196,10 +194,8 @@ class TTSNode(BaseNode):
             pass
         finally:
             worker_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await worker_task
-            except asyncio.CancelledError:
-                pass
             await self.sio.disconnect()
 
 

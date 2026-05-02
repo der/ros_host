@@ -6,19 +6,18 @@ transcriptions to text_stream room using pywhispercpp.
 
 import argparse
 import asyncio
+import contextlib
 import logging
 import os
 import sys
 import threading
-from queue import Queue, Empty
+from queue import Empty, Queue
 
 import numpy as np
 from pywhispercpp.model import Model
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-from messages.base import BaseNode
 from messages.audio import AudioInfo, AudioMessage
+from messages.base import BaseNode
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
 logger = logging.getLogger("asr_node")
@@ -175,10 +174,8 @@ class ASRNode(BaseNode):
             pass
         finally:
             publisher_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await publisher_task
-            except asyncio.CancelledError:
-                pass
             await self.sio.disconnect()
 
 
