@@ -148,8 +148,8 @@ class LLMNode(BaseNode):
 def main():
     parser = argparse.ArgumentParser(description="LLM node")
     parser.add_argument("--hub-url", default=None, help="Hub URL")
-    parser.add_argument("--text-topic", default="text_stream", help="Input text room")
-    parser.add_argument("--response-topic", default="llm_response", help="Output response room")
+    parser.add_argument("--text-topic", default="/text_stream", help="Input text room")
+    parser.add_argument("--response-topic", default="/llm_response", help="Output response room")
     parser.add_argument("--model-name", default="granite4:tiny-h", help="Ollama model name")
     args = parser.parse_args()
 

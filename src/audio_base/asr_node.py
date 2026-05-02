@@ -44,10 +44,10 @@ class ASRNode(BaseNode):
         self.format: str = ""
 
         # Model
-        self.model = None
+        self.model: Model | None = None
 
         # Buffer for accumulating audio
-        self.buffer = None
+        self.buffer: None | np.ndarray = None
         self.buffer_index = 0
         self.buffer_lock = threading.Lock()
 
@@ -185,8 +185,8 @@ class ASRNode(BaseNode):
 def main():
     parser = argparse.ArgumentParser(description="ASR node")
     parser.add_argument("--hub-url", default=None, help="Hub URL")
-    parser.add_argument("--topic", default="audio_stream", help="Audio room to listen to")
-    parser.add_argument("--output-topic", default="text_stream", help="Text room to publish to")
+    parser.add_argument("--topic", default="/audio_stream", help="Audio room to listen to")
+    parser.add_argument("--output-topic", default="/text_stream", help="Text room to publish to")
     parser.add_argument("--model-name", default="large-v3-turbo-q5_0", help="Whisper model name")
     args = parser.parse_args()
 

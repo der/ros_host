@@ -206,8 +206,8 @@ class TTSNode(BaseNode):
 def main():
     parser = argparse.ArgumentParser(description="TTS node")
     parser.add_argument("--hub-url", default=None, help="Hub URL")
-    parser.add_argument("--input-topic", default="text_stream", help="Input text room")
-    parser.add_argument("--output-topic", default="speech_stream", help="Output audio room")
+    parser.add_argument("--input-topic", default="/text_stream", help="Input text room")
+    parser.add_argument("--output-topic", default="/speech_stream", help="Output audio room")
     parser.add_argument("--voice", default="alba", help="Voice to use")
     args = parser.parse_args()
 

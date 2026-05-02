@@ -218,8 +218,8 @@ class ASRGemmaNode(BaseNode):
 def main():
     parser = argparse.ArgumentParser(description="ASR Gemma node")
     parser.add_argument("--hub-url", default=None, help="Hub URL")
-    parser.add_argument("--topic", default="audio_stream", help="Audio room to listen to")
-    parser.add_argument("--output-topic", default="text_stream", help="Text room to publish to")
+    parser.add_argument("--topic", default="/audio_stream", help="Audio room to listen to")
+    parser.add_argument("--output-topic", default="/text_stream", help="Text room to publish to")
     parser.add_argument("--model-name", default="google/gemma-4-E2B-it", help="Model name")
     args = parser.parse_args()
 

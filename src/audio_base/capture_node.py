@@ -186,7 +186,7 @@ class AudioCaptureNode(BaseNode):
 def main():
     parser = argparse.ArgumentParser(description="Audio capture node")
     parser.add_argument("--hub-url", default=None, help="Hub URL")
-    parser.add_argument("--topic", default="audio_stream", help="Room to publish to")
+    parser.add_argument("--topic", default="/audio_stream", help="Room to publish to")
     parser.add_argument("--sample-rate", type=int, default=16000, help="Sample rate")
     parser.add_argument("--channels", type=int, default=1, help="Number of channels")
     parser.add_argument("--chunk-size", type=int, default=512, help="Samples per chunk")

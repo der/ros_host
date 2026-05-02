@@ -205,7 +205,7 @@ class AudioPlayerNode(BaseNode):
 def main():
     parser = argparse.ArgumentParser(description="Audio player node")
     parser.add_argument("--hub-url", default=None, help="Hub URL")
-    parser.add_argument("--topic", default="audio_stream", help="Audio room to listen to")
+    parser.add_argument("--topic", default="/audio_stream", help="Audio room to listen to")
     parser.add_argument("--device-index", type=int, default=0, help="Audio output device index")
     parser.add_argument("--buffer-size", type=int, default=64, help="Number of chunks to buffer")
     args = parser.parse_args()
