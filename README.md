@@ -11,53 +11,42 @@ Socket.io-based base station nodes for Marvin the droid. All nodes communicate v
 
 ## Setup
 
-```bash
-uv sync
-uv sync --extra dev  # include ruff, pyright, pytest
+Dropped uv in favour of plain venv due to problems with pywhispercpp.
+
+```
+. venv/bin/activate
+```
+
+Updates:
+```
+pip install .
 ```
 
 For ASR node, install `pywhispercpp` with GPU support:
 
 ```bash
-# Strix Halo (Vulkan)
-GGML_VULKAN=1 uv pip install git+https://github.com/absadiki/pywhispercpp
+GGML_VULKAN=1 python -m pip install git+https://github.com/absadiki/pywhispercpp
 ```
 
 ## Running
 
-```bash
-# Start hub first
-uv run ./start_hub.sh
+Run all the nodes in the background with foreground listener on `/events`.
 
-# Then individual nodes
-uv run ./start_capture.sh     # Audio capture from mic
-uv run ./start_asr.sh         # ASR (whisper)
-uv run ./start_asr_gemma.sh   # ASR (gemma multimodal)
-uv run ./start_llm.sh         # LLM (gemma4:26b via ollama)
-uv run ./start_tts.sh         # TTS (pocket-tts)
-uv run ./start_player.sh      # Audio playback
+```bash
+. start
 ```
 
-For ASR node, install `pywhispercpp` with GPU support:
+## Manual commands.
 
-```bash
-# Strix Halo (Vulkan)
-GGML_VULKAN=1 uv pip install git+https://github.com/absadiki/pywhispercpp
+Basic eye and neck controls:
 ```
-
-## Running
-
-```bash
-# Start hub first
-uv run ./start_hub.sh
-
-# Then individual nodes
-uv run ./start_capture.sh     # Audio capture from mic
-uv run ./start_asr.sh         # ASR (whisper)
-uv run ./start_asr_gemma.sh   # ASR (gemma multimodal)
-uv run ./start_llm.sh         # LLM (gemma4:26b via ollama)
-uv run ./start_tts.sh         # TTS (pocket-tts)
-uv run ./start_player.sh      # Audio playback
+./sender --topic /marvin/neck --message '{"pan": 50, "tilt": 50, "speed": 1000}'
+./sender --topic /marvin/neck --message '{"pan": 0, "tilt": 0}'
+```
+and
+```
+./sender --topic /marvin/eyes --message '{"wide": True}'
+./sender --topic /marvin/eyes --message '{"x": 50}'
 ```
 
 ## Rooms & Data Flow

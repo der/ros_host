@@ -78,6 +78,15 @@ class LLMNode(BaseNode):
             await self.publish("/marvin/neck", {"pan": pan, "tilt": tilt, "speed": 1000})
             return None
         
+        async def move_robot(speed: int = 50, dir: str = 'f', dist: int | None = 50) -> None:
+            """Move your robot at the specified speed and direction for an optional distance.
+            Speed is a percentage from 0 to 100. Direction can be 'f' for forward, 'b' for backward, 
+            'sl'/'sr' for slide left/right, 'rl'/'rr' for rotate left/right, 'tr'/'tl' for turn right/left while moving forward, or 's' for stop.
+            Distance is how far to move in centimeters, for rotations use a small value like 20."""
+            logger.info(f"Moving motor with speed: {speed}, direction: {dir}, distance: {dist}")
+            await self.publish("/marvin/motor", {"speed": speed, "dir": dir, "dist": dist})
+            return None
+        
         self.agent = Agent(
             ollama_model,
             output_type=str,
@@ -86,7 +95,7 @@ class LLMNode(BaseNode):
                 "Respond to questions VERY BRIEFLY in plain text that the droid can speak aloud."
                 'If the user just says "Marvin" then respond with "Hi"'
             ),
-            tools=[get_time, move_neck],
+            tools=[get_time, move_neck, move_robot],
             model_settings={"thinking": False},
             history_processors=[self.keep_recent_messages]
         )

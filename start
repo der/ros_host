@@ -1,9 +1,17 @@
-#/bin/bash
-trap "kill $(jobs -p) 2>/dev/null" EXIT INT TERM
+#!/bin/bash
 
 mkdir -p logs
-. start_hub.sh > logs/hub.log 2>&1 &
-. start_asr.sh > logs/asr.log 2>&1 &
-. start_tts.sh > logs/tts.log 2>&1 &
-. start_llm.sh > logs/llm.log 2>&1 &
-./listener --topic /events
+
+(
+    . venv/bin/activate
+    python src/hub/server.py        2> logs/hub.log &
+    python src/audio_base/asr_node.py  > logs/asr.log 2>&1 &
+    python src/audio_base/tts_node.py  > logs/tts.log 2>&1 &
+    python src/llm_support/llm_node.py > logs/llm.log 2>&1 &
+    ./listener --topic /events
+    wait
+) &
+SUBSHELL=$!
+echo "Started subshell with PID $SUBSHELL"
+
+trap "kill -$SUBSHELL; wait $SUBSHELL 2>/dev/null" EXIT

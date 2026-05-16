@@ -7,7 +7,7 @@ import uvicorn
 from starlette.applications import Starlette
 from starlette.routing import Mount
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
 logger = logging.getLogger("hub")
 
 sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")

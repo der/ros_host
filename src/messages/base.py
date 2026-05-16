@@ -64,8 +64,11 @@ class BaseNode:
             room = data.get("room", "unknown")
             message = data.get("message", {})
             handler = self._handlers.get(room)
-            if handler:
-                await handler(message)
+            if handler is not None:
+                try:
+                    await handler(message)
+                except Exception as e:
+                    logger.error(f"{self.node_name} handler error on {room}: {e}")
             else:
                 logger.debug(f"{self.node_name} received message on {room} (no handler)")
 
