@@ -59,8 +59,8 @@ class BaseNode:
             logger.info(f"{self.node_name} disconnected from hub")
             self._connected.clear()
 
-        @self.sio.on("message")
-        async def on_message(data: dict):
+        @self.sio.event
+        async def message(data: dict):
             room = data.get("room", "unknown")
             message = data.get("message", {})
             handler = self._handlers.get(room)
