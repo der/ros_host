@@ -64,8 +64,8 @@ Nodes mix asyncio with threads for I/O and blocking work:
 
 ```
 # Any node serving RPC — register on the raw sio client
-self.sio.on('rpc_request')(self._handle_rpc)
-async def _handle_rpc(self, sid, data):
+self.sio.on('rpc_request', self._handle_rpc)
+async def _handle_rpc(self, data):
     result = process(data['message'])
     return result  # ACK
 

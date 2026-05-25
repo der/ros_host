@@ -78,7 +78,7 @@ async def rpc(sid, data):
     message = data.get("message")
     timeout = data.get("timeout", 10)
     responses = await sio.call("rpc_request", {"message": message}, to=room, timeout=timeout)
-    return responses[0] if responses else None
+    return next(iter(responses.values()), None) if responses else None
 
 
 app = Starlette(
