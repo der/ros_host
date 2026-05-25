@@ -11,7 +11,7 @@ import os
 import re
 from datetime import datetime
 
-from pydantic_ai import Agent, SystemPromptPart
+from pydantic_ai import Agent, SystemPromptPart, BinaryContent
 from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.profiles import ModelProfile
@@ -27,7 +27,8 @@ _SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
 
 # Tools for use by the agent, extract to separate file if this grows
 def get_time() -> str:
-    """Get the current date and time."""
+    """Get the current date and time.
+       If asked the time always call this fresh, don't rely on your previous answer, since time is always changing."""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
@@ -72,8 +73,8 @@ class LLMNode(BaseNode):
         async def move_neck(pan: int, tilt: int) -> None:
             """Move your robot neck to the specified pan and tilt positions.
             These are values between -100 and 100 representing the percentage 
-            of the full range of motion in each direction."""
-            # Placeholder implementation - replace with actual control code
+            of the full range of motion in each direction. 
+            Positive tilts are up, negative are down."""
             logger.info(f"Moving neck to pan: {pan}, tilt: {tilt}")
             await self.publish("/marvin/neck", {"pan": pan, "tilt": tilt, "speed": 1000})
             return None
@@ -87,6 +88,25 @@ class LLMNode(BaseNode):
             await self.publish("/marvin/motor", {"speed": speed, "dir": dir, "dist": dist})
             return None
         
+        async def get_view() -> BinaryContent | str:
+            """Get a description of what you see through your camera."""
+            logger.info("Getting view from camera")
+            image_data = await self.call("/marvin/camera", {"resolution": "lores"})
+            if image_data is None:
+                logger.error("No response from camera server")
+                return "I couldn't get a view from the camera."
+            elif "error" in image_data and image_data["error"]:
+                logger.error(f"Camera server error: {image_data['error']}")
+                return "I couldn't get a view from the camera."
+            elif "data" in image_data and image_data["data"]:
+                logger.info("Received image data from camera")
+                format = image_data.get("format", "image/jpeg")
+                return BinaryContent(data=image_data["data"], media_type=format)
+            else:
+                logger.error(f"Unexpected camera response: {image_data}")
+                return "I couldn't get a view from the camera."
+
+        
         self.agent = Agent(
             ollama_model,
             output_type=str,
@@ -95,7 +115,7 @@ class LLMNode(BaseNode):
                 "Respond to questions VERY BRIEFLY in plain text that the droid can speak aloud."
                 'If the user just says "Marvin" then respond with "Hi"'
             ),
-            tools=[get_time, move_neck, move_robot],
+            tools=[get_time, move_neck, move_robot, get_view],
             model_settings={"thinking": False},
             history_processors=[self.keep_recent_messages]
         )

@@ -17,13 +17,16 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message
 logger = logging.getLogger("node")
 
 
-async def run(topic: str, resolution: str, hub_url: str, interval: float) -> None:
+async def run(topic: str, resolution: str, hub_url: str, interval: float, duration: float) -> None:
     client = BaseNode(hub_url=hub_url, node_name="camera_listener")
     await client.sio.connect(client.hub_url)
     await client._connected.wait()
 
+    start_time = asyncio.get_event_loop().time()
     try:
         while True:
+            if asyncio.get_event_loop().time() - start_time > duration:
+                break
             response = await client.call(topic, {"resolution": resolution})
             if response is None:
                 logger.error("No response from camera server")
@@ -50,9 +53,10 @@ async def run(topic: str, resolution: str, hub_url: str, interval: float) -> Non
 def main() -> None:
     parser = argparse.ArgumentParser(description="Camera listener — fetches and displays camera frames via RPC")
     parser.add_argument("--topic", default="/marvin/camera", help="RPC topic to call")
-    parser.add_argument("--resolution", default="full", choices=["full", "lores"], help="Resolution to request")
+    parser.add_argument("--resolution", default="lores", choices=["full", "lores"], help="Resolution to request")
     parser.add_argument("--hub-url", default=None, help="Hub URL (default: http://localhost:5000)")
-    parser.add_argument("--interval", type=float, default=0.1, help="Seconds between frames (default: 0.1)")
+    parser.add_argument("--interval", type=float, default=0.5, help="Seconds between frames (default: 0.5)")
+    parser.add_argument("--duration", type=float, default=10, help="Duration to run in seconds (default: 10)")
     args = parser.parse_args()
 
     asyncio.run(run(
@@ -60,6 +64,7 @@ def main() -> None:
         resolution=args.resolution,
         hub_url=args.hub_url or "http://localhost:5000",
         interval=args.interval,
+        duration=args.duration
     ))
 
 

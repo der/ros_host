@@ -49,6 +49,12 @@ and
 ./sender --topic /marvin/eyes --message '{"x": 50}'
 ```
 
+Display camera view:
+
+```
+./camera_show
+```
+
 ## Rooms & Data Flow
 
 ```
@@ -87,10 +93,10 @@ Subscribes to `text_stream`, streams responses from Ollama via pydantic_ai, publ
 
 ```bash
 # Listen on any room
-uv run python src/tools/listener.py --room text_stream
+listener --room text_stream
 
 # Send text to any room
-uv run python src/tools/sender.py --room text_stream --message "hello"
+sender --room text_stream --message "hello"
 ```
 
 ## Configuration
