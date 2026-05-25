@@ -70,6 +70,17 @@ async def publish(sid, data):
     )
 
 
+@sio.event
+async def rpc(sid, data):
+    room = data.get("room")
+    if not room:
+        return None
+    message = data.get("message")
+    timeout = data.get("timeout", 10)
+    responses = await sio.call("rpc_request", {"message": message}, to=room, timeout=timeout)
+    return responses[0] if responses else None
+
+
 app = Starlette(
     routes=[
         Mount("/", app=sio_app),

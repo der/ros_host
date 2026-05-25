@@ -103,6 +103,10 @@ class BaseNode:
         data: dict[str, Any] = {"type": type, "message": message}
         await self.sio.emit("publish", {"room": "/events", "message": data})
 
+    async def call(self, room: str, message: dict, timeout: int = 10) -> Any:
+        """Send an RPC request to a room and wait for the response."""
+        return await self.sio.call("rpc", {"room": room, "message": message, "timeout": timeout})
+
     async def run(self) -> None:
         """Connect to hub and wait until interrupted."""
         await self.sio.connect(self.hub_url)
