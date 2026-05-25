@@ -77,7 +77,7 @@ async def rpc(sid, data):
         return None
     message = data.get("message")
     timeout = data.get("timeout", 10)
-    responses = await sio.call("rpc_request", {"message": message}, to=room, timeout=timeout)
+    responses = await sio.call("rpc_request", {"message": message, "room": room}, to=room, timeout=timeout)
     return next(iter(responses.values()), None) if responses else None
 
 

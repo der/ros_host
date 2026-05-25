@@ -72,6 +72,22 @@ class BaseNode:
             else:
                 logger.debug(f"{self.node_name} received message on {room} (no handler)")
 
+        @self.sio.event
+        async def rpc_request(data: dict):
+            room = data.get("room", "unknown")
+            message = data.get("message", {})
+            handler = self._handlers.get(room)
+            if handler is not None:
+                try:
+                    response = await handler(message)
+                    return {"response": response}
+                except Exception as e:
+                    logger.error(f"{self.node_name} RPC handler error on {room}: {e}")
+                    return {"error": str(e)}
+            else:
+                logger.debug(f"{self.node_name} received RPC on {room} (no handler)")
+                return {"error": f"no handler for room {room}"}
+
     def handler(self, room: str):
         """Decorator to register a handler for messages on a room.
 

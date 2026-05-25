@@ -32,6 +32,8 @@ dependencies = [
   "scipy",
   "pywhispercpp",
   "transformers",
+  "matplotlib",
+  "PyQt6",
 ]
 
 [project.optional-dependencies]

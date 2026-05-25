@@ -14,4 +14,10 @@ mkdir -p logs
 SUBSHELL=$!
 echo "Started subshell with PID $SUBSHELL"
 
+while true
+do
+    sleep 1
+done
+
 trap "kill -$SUBSHELL; wait $SUBSHELL 2>/dev/null" EXIT
+sleep 1

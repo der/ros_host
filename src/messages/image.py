@@ -4,4 +4,5 @@ from pydantic import BaseModel
 
 class ImageMessage(BaseModel):
     format: str = "image/jpeg"
-    data: bytes
+    data: bytes | None = None
+    error: str | None = None

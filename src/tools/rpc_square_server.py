@@ -12,10 +12,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message
 class SquareServer(BaseNode):
     def __init__(self, hub_url: str, topic: str):
         super().__init__(hub_url=hub_url, node_name=f"square_server:{topic}")
-        self.sio.on("rpc_request", self._handle_rpc)
+        self.handler(topic)(self._handle_rpc)
 
     async def _handle_rpc(self, data):
-        num = data.get("message", {}).get("number")
+        num = data.get("number")
         if num is None:
             return {"error": "missing 'number' in message"}
         return {"square": num ** 2}
