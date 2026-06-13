@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 
 from messages.base import BaseNode
 from messages.image import ImageMessage
+from ultralytics import YOLO
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
 logger = logging.getLogger("node")
@@ -21,6 +22,8 @@ async def run(topic: str, resolution: str, hub_url: str, interval: float, durati
     client = BaseNode(hub_url=hub_url, node_name="camera_listener")
     await client.sio.connect(client.hub_url)
     await client._connected.wait()
+
+    model = YOLO("yolo26m.pt")
 
     start_time = asyncio.get_event_loop().time()
     try:
@@ -38,7 +41,9 @@ async def run(topic: str, resolution: str, hub_url: str, interval: float, durati
                     elif msg.data:
                         print("Received image data, displaying...")
                         image = np.asarray(Image.open(io.BytesIO(msg.data)))
-                        plt.imshow(image)
+                        results = model.predict(image, conf=0.5)
+                        annotated_image = results[0].plot()
+                        plt.imshow(annotated_image)
                         plt.show(block=False)
                         plt.pause(0.001)
                 except Exception as e:
