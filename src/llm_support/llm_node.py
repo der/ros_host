@@ -91,7 +91,7 @@ class LLMNode(BaseNode):
         async def get_view() -> BinaryContent | str:
             """Get a description of what you see through your camera."""
             logger.info("Getting view from camera")
-            image_data = await self.call("/marvin/camera", {"resolution": "full"})
+            image_data = await self.call("/marvin/camera-rpc", {"resolution": "full"})
             if image_data is None:
                 logger.error("No response from camera server")
                 return "I couldn't get a view from the camera."
